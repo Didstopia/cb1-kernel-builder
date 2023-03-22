@@ -67,7 +67,7 @@ runs:
   using: 'docker'
   # image: 'Dockerfile'
   # image: 'docker://ghcr.io/didstopia/cb1-kernel-builder:latest'
-  image: 'docker://ghcr.io/didstopia/cb1-kernel-builder:main'
+  image: 'docker://ghcr.io/didstopia/cb1-kernel-builder:master'
   # args:
   #   - ${{ inputs.token }}
   # Pass the inputs to the Docker container.
