@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+
+  cb1-kernel-builder:
+    image: ghcr.io/didstopia/cb1-kernel-builder:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: 'no'
+    volumes:
+      - ${PWD}/build:/build
+      - ${PWD}/output:/output

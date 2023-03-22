@@ -1,0 +1,47 @@
+name: Test
+
+# Only allow this workflow to run once per workflow and event type/number.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number }}
+
+# FIXME: Tests should additionally run _after_ publishing, to verify that the published
+#        newly created container image still works as expected!
+
+# Run this workflow every time a new commit pushed to any branch in your repository.
+on:
+  push:
+    # branches:
+    #   - master
+  # Allow triggering manually.
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+
+      ## TODO: Build the container image here, but don't publish it,
+      ##       then specify a tag that we will use for this specific
+      ##       test run, and make it unique, then use it for "image-version".
+
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      ## TODO: Implement the actual testing here!
+
+      # - name: Run Custom Action
+      #   id: run-action
+      #   uses: ./
+      #   # with:
+      #   #   timezone: Europe/Helsinki
+      #   #   repo-origin: Test Origin
+      #   #   repo-label: Test Label
+      #   #   repo-version: 0.1.2
+      #   #   repo-description: Test Description
+
+      # - name: Verify Results
+      #   run: |
+      #     echo "The time was ${{ steps.run-action.outputs.time }}"

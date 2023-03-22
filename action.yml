@@ -1,0 +1,87 @@
+# Basic information for the custom GitHub Action.
+name: 'CB1 Kernel Builder'
+description: 'Builds the BIGTREETECH CB1 linux kernel.'
+author: 'Didstopia'
+
+## TODO: Change the branding at some point
+# Branding for the custom GitHub Action.
+branding:
+  icon: 'globe'
+  color: 'green'
+
+# The inputs for the custom GitHub Action.
+inputs:
+  repo:
+    description: 'The kernel git repository to clone.'
+    required: true
+    default: 'github.com/bigtreetech/CB1-Kernel'
+  branch:
+    description: 'The kernel git repository branch to clone.'
+    required: true
+    default: 'kernel-5.16'
+  build-path:
+    description: 'The path to store build files in.'
+    required: true
+    default: '/build'
+  output-path:
+    description: 'The path to store the output files in.'
+    required: true
+    default: '/output'
+  target-board:
+    description: 'The target board to build for.'
+    required: true
+    default: 'h616'
+  target-branch:
+    description: 'The target branch to build for.'
+    required: true
+    default: 'current'
+  target-build-option:
+    description: 'The target build option to use.'
+    required: true
+    default: 'kernel'
+  target-release:
+    description: 'The target release to build for.'
+    required: true
+    default: 'bullseye'
+  target-kernel-configure:
+    description: 'Whether or not to configure the target kernel.'
+    required: true
+    default: 'no'
+  target-manual-kernel-configure:
+    description: 'Whether or not to manually configure the target kernel.'
+    required: true
+    default: 'no'
+  target-kernel-export-defconfig:
+    description: 'Whether or not to export the target kernel defconfig.'
+    required: true
+    default: 'yes'
+
+## TODO: Do we need any outputs? I suppose for the build output path?
+# The outputs for the custom GitHub Action.
+# outputs:
+#   time: # id of output
+#     description: 'The time we greeted you'
+
+# Define how to run the custom GitHub Action.
+runs:
+  using: 'docker'
+  # image: 'Dockerfile'
+  # image: 'docker://ghcr.io/didstopia/cb1-kernel-builder:latest'
+  image: 'docker://ghcr.io/didstopia/cb1-kernel-builder:main'
+  # args:
+  #   - ${{ inputs.token }}
+  # Pass the inputs to the Docker container.
+  env:
+    #
+    CB1_KERNEL_REPO: ${{ inputs.repo }}
+    CB1_KERNEL_BRANCH: ${{ inputs.branch }}
+    CB1_BUILD_DIR: ${{ inputs.build-path }}
+    CB1_OUTPUT_DIR: ${{ inputs.output-path }}
+    #
+    BOARD: ${{ inputs.target-board }}
+    BRANCH: ${{ inputs.target-branch }}
+    BUILD_OPT: ${{ inputs.target-build-option }}
+    RELEASE: ${{ inputs.target-release }}
+    KERNEL_CONFIGURE: ${{ inputs.target-kernel-configure }}
+    MANUAL_KERNEL_CONFIGURE: ${{ inputs.target-manual-kernel-configure }}
+    KERNEL_EXPORT_DEFCONFIG: ${{ inputs.target-kernel-export-defconfig }}
