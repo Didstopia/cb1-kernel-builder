@@ -102,6 +102,7 @@ ENV CB1_BUILD_DIR="/build"
 ENV CB1_OUTPUT_DIR="/output"
 # ENV CB1_KERNEL_DIR="${CB1_BUILD_DIR}/CB1-Kernel"
 # ENV CB1_BUILD_SCRIPT="${CB1_KERNEL_DIR}/build.sh"
+ENV CB1_ONLY_DETECT_KERNEL_VERSION="no"
 
 # Set up the build and output directories and expose them as volumes
 RUN mkdir -p /build /output
@@ -117,13 +118,13 @@ ENV TERM="xterm-256color"
 
 ## TODO: These will basically hardcode a non-interactive build,
 ##       but it still might not work without the build configs etc. already in place?
-ENV BOARD=h616
-ENV BRANCH=current
-ENV BUILD_OPT=kernel
-ENV RELEASE=bullseye
-ENV KERNEL_CONFIGURE=no
-ENV MANUAL_KERNEL_CONFIGURE=no
-ENV KERNEL_EXPORT_DEFCONFIG=yes
+ENV BOARD="h616"
+ENV BRANCH="current"
+ENV BUILD_OPT="kernel"
+ENV RELEASE="bullseye"
+ENV KERNEL_CONFIGURE="no"
+ENV MANUAL_KERNEL_CONFIGURE="no"
+ENV KERNEL_EXPORT_DEFCONFIG="yes"
 
 # Safe defaults for GitHub Actions
 # ENV GITHUB_WORKSPACE="/github/workspace"
@@ -132,8 +133,9 @@ ENV GITHUB_OUTPUT="/tmp/gha_output"
 ## FIXME: Add validation for the kernel revision detection, to ensure it's not empty and that it's a valid revision/version number
 # Create startup script ENTRYPOITN and pass any arguments to the build.sh script
 RUN echo '#!/usr/bin/env bash' > /usr/local/bin/entrypoint && \
+    echo 'cat /usr/local/bin/entrypoint' >> /usr/local/bin/entrypoint && \
     echo '#set -eo pipefail' >> /usr/local/bin/entrypoint && \
-    echo '#set -x' >> /usr/local/bin/entrypoint && \
+    echo 'set -x' >> /usr/local/bin/entrypoint && \
     echo 'export CB1_KERNEL_DIR="${CB1_BUILD_DIR}/CB1-Kernel"' >> /usr/local/bin/entrypoint && \
     echo 'export CB1_BUILD_SCRIPT="${CB1_KERNEL_DIR}/build.sh"' >> /usr/local/bin/entrypoint && \
     echo 'ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone' >> /usr/local/bin/entrypoint && \
@@ -147,17 +149,18 @@ RUN echo '#!/usr/bin/env bash' > /usr/local/bin/entrypoint && \
     echo 'git fetch' >> /usr/local/bin/entrypoint && \
     echo 'git reset --hard "origin/${CB1_KERNEL_BRANCH}"' >> /usr/local/bin/entrypoint && \
     echo 'git checkout "${CB1_KERNEL_BRANCH}"' >> /usr/local/bin/entrypoint && \
-    echo '#sed -i "s/TTY_X=.*/TTY_X=\$TTY_X/g; s/TTY_Y=.*/TTY_Y=\$TTY_Y/g" "${CB1_KERNEL_DIR}/scripts/main.sh"' >> /usr/local/bin/entrypoint && \
     echo 'export CB1_KERNEL_REVISION="$(grep -oP "(?<=REVISION=).+" "${CB1_KERNEL_DIR}/scripts/main.sh")"' >> /usr/local/bin/entrypoint && \
-    echo 'if [ -z "${CB1_KERNEL_REVISION}" ]; then' >> /usr/local/bin/entrypoint && \
-    echo '  echo "ERROR: Failed to detect kernel revision!"' >> /usr/local/bin/entrypoint && \
+    echo 'if [[ -n "${CB1_KERNEL_REVISION:-}" && "${CB1_KERNEL_REVISION}" =~ ^[0-9]+\\.[0-9]+\\.[0-9]+$ ]]; then' >> /usr/local/bin/entrypoint && \
+    echo '  echo "ERROR: Failed to detect kernel revision from value: ${CB1_KERNEL_REVISION}"' >> /usr/local/bin/entrypoint && \
     echo '  exit 1' >> /usr/local/bin/entrypoint && \
+    echo 'else' >> /usr/local/bin/entrypoint && \
+    echo '  echo "Detected a valid kernel revision: ${CB1_KERNEL_REVISION}"' >> /usr/local/bin/entrypoint && \
+    echo '  echo "revision=${CB1_KERNEL_REVISION}" > $GITHUB_OUTPUT' >> /usr/local/bin/entrypoint && \
     echo 'fi' >> /usr/local/bin/entrypoint && \
-    echo 'if ! [[ "${CB1_KERNEL_REVISION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then' >> /usr/local/bin/entrypoint && \
-    echo '  echo "ERROR: Detected kernel revision is not a valid version number: ${CB1_KERNEL_REVISION}"' >> /usr/local/bin/entrypoint && \
-    echo '  exit 1' >> /usr/local/bin/entrypoint && \
-    echo 'echo "Detected kernel revision: ${CB1_KERNEL_REVISION}"' >> /usr/local/bin/entrypoint && \
-    echo 'echo "revision=${CB1_KERNEL_REVISION}" > $GITHUB_OUTPUT' >> /usr/local/bin/entrypoint && \
+    echo 'if [ "${CB1_ONLY_DETECT_KERNEL_VERSION}" = "yes" ]; then' >> /usr/local/bin/entrypoint && \
+    echo '  echo "CB1_ONLY_DETECT_KERNEL_VERSION is enabled, skipping build and terminating ..."' >> /usr/local/bin/entrypoint && \
+    echo '  exit 0' >> /usr/local/bin/entrypoint && \
+    echo 'fi' >> /usr/local/bin/entrypoint && \
     echo 'echo "Building CB1 kernel ..."' >> /usr/local/bin/entrypoint && \
     echo 'chmod +x "${CB1_BUILD_SCRIPT}"' >> /usr/local/bin/entrypoint && \
     echo '"${CB1_BUILD_SCRIPT}" "$@"' >> /usr/local/bin/entrypoint && \

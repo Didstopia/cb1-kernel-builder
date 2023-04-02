@@ -55,6 +55,10 @@ inputs:
     description: 'Whether or not to export the target kernel defconfig.'
     required: true
     default: 'yes'
+  only-detect-kernel-version:
+    description: 'Whether or not to only detect the kernel version.'
+    required: true
+    default: 'no'
 
 # The outputs for the custom GitHub Action.
 outputs:
@@ -84,3 +88,4 @@ runs:
     KERNEL_CONFIGURE: ${{ inputs.target-kernel-configure }}
     MANUAL_KERNEL_CONFIGURE: ${{ inputs.target-manual-kernel-configure }}
     KERNEL_EXPORT_DEFCONFIG: ${{ inputs.target-kernel-export-defconfig }}
+    CB1_ONLY_DETECT_KERNEL_VERSION: ${{ inputs.only-detect-kernel-version }}

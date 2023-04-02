@@ -18,9 +18,10 @@ services:
       BRANCH: current
       BUILD_OPT: kernel
       RELEASE: bullseye
-      KERNEL_CONFIGURE: no
-      MANUAL_KERNEL_CONFIGURE: no
-      KERNEL_EXPORT_DEFCONFIG: yes
+      KERNEL_CONFIGURE: 'no'
+      MANUAL_KERNEL_CONFIGURE: 'no'
+      KERNEL_EXPORT_DEFCONFIG: 'yes'
+      CB1_ONLY_DETECT_KERNEL_VERSION: 'yes'
     volumes:
       - ${PWD}/build:/github/workspace/build
       - ${PWD}/output:/github/workspace/output
