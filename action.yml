@@ -56,11 +56,10 @@ inputs:
     required: true
     default: 'yes'
 
-## TODO: Do we need any outputs? I suppose for the build output path?
 # The outputs for the custom GitHub Action.
-# outputs:
-#   time: # id of output
-#     description: 'The time we greeted you'
+outputs:
+  revision: # id of output
+    description: 'The BTT CB1 kernel revision. (eg. "2.3.2")'
 
 # Define how to run the custom GitHub Action.
 runs:

@@ -125,6 +125,11 @@ ENV KERNEL_CONFIGURE=no
 ENV MANUAL_KERNEL_CONFIGURE=no
 ENV KERNEL_EXPORT_DEFCONFIG=yes
 
+# Safe defaults for GitHub Actions
+# ENV GITHUB_WORKSPACE="/github/workspace"
+ENV GITHUB_OUTPUT="/tmp/gha_output"
+
+## FIXME: Add validation for the kernel revision detection, to ensure it's not empty and that it's a valid revision/version number
 # Create startup script ENTRYPOITN and pass any arguments to the build.sh script
 RUN echo '#!/usr/bin/env bash' > /usr/local/bin/entrypoint && \
     echo '#set -eo pipefail' >> /usr/local/bin/entrypoint && \
@@ -142,8 +147,17 @@ RUN echo '#!/usr/bin/env bash' > /usr/local/bin/entrypoint && \
     echo 'git fetch' >> /usr/local/bin/entrypoint && \
     echo 'git reset --hard "origin/${CB1_KERNEL_BRANCH}"' >> /usr/local/bin/entrypoint && \
     echo 'git checkout "${CB1_KERNEL_BRANCH}"' >> /usr/local/bin/entrypoint && \
-    echo '#echo "Patching ${CB1_KERNEL_DIR}/scripts/main.sh with sed and replacing TTY_X and TTY_Y with static values ..."' >> /usr/local/bin/entrypoint && \
     echo '#sed -i "s/TTY_X=.*/TTY_X=\$TTY_X/g; s/TTY_Y=.*/TTY_Y=\$TTY_Y/g" "${CB1_KERNEL_DIR}/scripts/main.sh"' >> /usr/local/bin/entrypoint && \
+    echo 'export CB1_KERNEL_REVISION="$(grep -oP "(?<=REVISION=).+" "${CB1_KERNEL_DIR}/scripts/main.sh")"' >> /usr/local/bin/entrypoint && \
+    echo 'if [ -z "${CB1_KERNEL_REVISION}" ]; then' >> /usr/local/bin/entrypoint && \
+    echo '  echo "ERROR: Failed to detect kernel revision!"' >> /usr/local/bin/entrypoint && \
+    echo '  exit 1' >> /usr/local/bin/entrypoint && \
+    echo 'fi' >> /usr/local/bin/entrypoint && \
+    echo 'if ! [[ "${CB1_KERNEL_REVISION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then' >> /usr/local/bin/entrypoint && \
+    echo '  echo "ERROR: Detected kernel revision is not a valid version number: ${CB1_KERNEL_REVISION}"' >> /usr/local/bin/entrypoint && \
+    echo '  exit 1' >> /usr/local/bin/entrypoint && \
+    echo 'echo "Detected kernel revision: ${CB1_KERNEL_REVISION}"' >> /usr/local/bin/entrypoint && \
+    echo 'echo "revision=${CB1_KERNEL_REVISION}" > $GITHUB_OUTPUT' >> /usr/local/bin/entrypoint && \
     echo 'echo "Building CB1 kernel ..."' >> /usr/local/bin/entrypoint && \
     echo 'chmod +x "${CB1_BUILD_SCRIPT}"' >> /usr/local/bin/entrypoint && \
     echo '"${CB1_BUILD_SCRIPT}" "$@"' >> /usr/local/bin/entrypoint && \
