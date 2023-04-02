@@ -8,6 +8,19 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: 'no'
+    environment:
+      GITHUB_WORKSPACE: /github/workspace
+      CB1_KERNEL_REPO: github.com/Didstopia/CB1-Kernel
+      CB1_KERNEL_BRANCH: kernel-5.16
+      CB1_BUILD_DIR: /github/workspace/build
+      CB1_OUTPUT_DIR: /github/workspace/output
+      BOARD: h616
+      BRANCH: current
+      BUILD_OPT: kernel
+      RELEASE: bullseye
+      KERNEL_CONFIGURE: no
+      MANUAL_KERNEL_CONFIGURE: no
+      KERNEL_EXPORT_DEFCONFIG: yes
     volumes:
-      - ${PWD}/build:/build
-      - ${PWD}/output:/output
+      - ${PWD}/build:/github/workspace/build
+      - ${PWD}/output:/github/workspace/output

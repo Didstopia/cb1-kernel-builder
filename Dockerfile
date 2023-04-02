@@ -100,8 +100,8 @@ ENV CB1_KERNEL_REPO="github.com/bigtreetech/CB1-Kernel"
 ENV CB1_KERNEL_BRANCH="kernel-5.16"
 ENV CB1_BUILD_DIR="/build"
 ENV CB1_OUTPUT_DIR="/output"
-ENV CB1_KERNEL_DIR="${CB1_BUILD_DIR}/CB1-Kernel"
-ENV CB1_BUILD_SCRIPT="${CB1_KERNEL_DIR}/build.sh"
+# ENV CB1_KERNEL_DIR="${CB1_BUILD_DIR}/CB1-Kernel"
+# ENV CB1_BUILD_SCRIPT="${CB1_KERNEL_DIR}/build.sh"
 
 # Set up the build and output directories and expose them as volumes
 RUN mkdir -p /build /output
@@ -129,7 +129,10 @@ ENV KERNEL_EXPORT_DEFCONFIG=yes
 RUN echo '#!/usr/bin/env bash' > /usr/local/bin/entrypoint && \
     echo '#set -eo pipefail' >> /usr/local/bin/entrypoint && \
     echo '#set -x' >> /usr/local/bin/entrypoint && \
+    echo 'export CB1_KERNEL_DIR="${CB1_BUILD_DIR}/CB1-Kernel"' >> /usr/local/bin/entrypoint && \
+    echo 'export CB1_BUILD_SCRIPT="${CB1_KERNEL_DIR}/build.sh"' >> /usr/local/bin/entrypoint && \
     echo 'ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone' >> /usr/local/bin/entrypoint && \
+    echo 'mkdir -p "${CB1_BUILD_DIR}" "${CB1_OUTPUT_DIR}"' >> /usr/local/bin/entrypoint && \
     echo 'if [ ! -d "${CB1_KERNEL_DIR}" ]; then' >> /usr/local/bin/entrypoint && \
     echo '  echo "CB1 kernel not found, downloading (this may take a while) ..."' >> /usr/local/bin/entrypoint && \
     echo '  git clone "https://${CB1_KERNEL_REPO}.git" --depth 1 --branch "${CB1_KERNEL_BRANCH}" "${CB1_KERNEL_DIR}"' >> /usr/local/bin/entrypoint && \
